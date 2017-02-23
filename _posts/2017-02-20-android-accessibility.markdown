@@ -14,7 +14,9 @@ tags:
 
 > Android is for Everyone,  and Everyone has the access to Everything.
 
-提到无障碍设计（Accessibility），人们第一时间想到的是为残障人士或者特殊人群做的优化——更大的字号，栏杆和拐杖，助听器。没错，Google在API 4加入Accessibility Service的初衷就是为了服务残疾人，或者无法正常和设备交互的人，比如正在开车的司机、带小孩的母亲、视力弱化的老人等。
+提到无障碍设计（Accessibility），人们第一时间想到的是为残障人士或者特殊人群做的优化——更大的字号，栏杆和拐杖，助听器。
+
+没错，Google在API 4加入Accessibility Service的初衷就是为了服务残疾人，或者无法正常和设备交互的人，比如正在开车的司机、带小孩的母亲、视力弱化的老人等。
 
 Google API对Accessibility Service的描述为：
 * Accessibility Service应该**只被**用来辅助残障用户使用Android设备和应用。
@@ -22,10 +24,9 @@ Google API对Accessibility Service的描述为：
 * 这些事件代表着用户界面的状态变化，例如，焦点变更、按钮点击等。
 * Accessibility Service也可以通过额外的配置，获取遍历界面上所有内容的能力。
 
-
 ## 一、Accessibility基础知识
 
-### 1.1 Declaration
+### 1.1 声明
 
 ```xml
 <service android:name=".MyAccessibilityService"
@@ -40,9 +41,7 @@ Google API对Accessibility Service的描述为：
 * 声明android.permission.BIND_ACCESSIBILITY_SERVICE权限
 * 声明Service可以处理android.accessibilityservice.AccessibilityService这个Intent
 
----
-
-### 1.2 Configuration
+### 1.2 配置
 
 #### 1.2.1 两种配置方式
 
@@ -56,6 +55,7 @@ A、在Manifest里声明meta-data，指定一个xml文件。
  </service>
 ```
 
+xml/accessibilityservice.xml
 ```xml
  <accessibility-service
      android:accessibilityEventTypes="typeViewClicked|typeWindowStateChanged"
@@ -81,6 +81,59 @@ void setServiceInfo (AccessibilityServiceInfo info)
 * description 权限描述文字
 * packageNames 接收哪些应用的AccessibilityEvent
 
+### 1.3 使用
+
+#### 1.3.1 事件监听(异步回调)
+void onAccessibilityEvent (AccessibilityEvent event)
+
+- `TYPE_VIEW_CLICKED`  View点击事件
+- `TYPE_VIEW_LONG_CLICKED`  View长按事件
+- `TYPE_VIEW_TEXT_CHANGED` EditText内容变化事件
+- `TYPE_VIEW_SCROLLED` 界面滑动结束
+- `TYPE_WINDOW_STATE_CHANGED` 代表任何界面的跳转，如Activity、Dialog、PopupWindow等
+
+boolean onKeyEvent (KeyEvent event)
+
+boolean onGesture (int gestureId)
+
+#### 1.3.2 动作模拟
+boolean performGlobalAction (int action)
+
++ `GLOBAL_ACTION_BACK` Back键
++ `GLOBAL_ACTION_HOME` Home键
++ `GLOBAL_ACTION_RECENTS` Recent键
+
+AccessibilityNodeInfo: boolean performAction (int action)
++ `ACTION_CLICK` 点击动作
++ `ACTION_LONG_CLICK` 长按动作
++ `ACTION_SCROLL_UP` 向上滑动
++ `ACTION_SCROLL_DOWN` 向下滑动
++ `ACTION_SET_TEXT` 设置文字内容
+
+#### 1.3.3 AccessibilityNodeInfo
+View和AccessibilityNodeInfo的对应关系。
+
+`AccessibilityNodeInfo AccessibilityService.getRootInActiveWindow ()`
+
+```java
+public int getChildCount ()
+public AccessibilityNodeInfo getChild (int index)
+
+public List<AccessibilityNodeInfo> findAccessibilityNodeInfosByText (String text)
+public List<AccessibilityNodeInfo> findAccessibilityNodeInfosByViewId (String viewId)     Added in API level 18
+
+public void getBoundsInScreen (Rect outBounds)
+
+public CharSequence getClassName ()
+public CharSequence getPackageName ()
+public CharSequence getText ()
+
+public int getWindowId ()
+
+public boolean isChecked ()
+
+public boolean performAction (int action)
+```
 
 ## 二、单例化
 Accessibility权限的赋予是以Service为单元，而不是以Application为单元。
@@ -88,31 +141,19 @@ Accessibility权限的赋予是以Service为单元，而不是以Application为�
 Ex. 一个应用里需要用Accessibility Service做两件事
 * 清理内存ForceStop
 * 监听系统按键
-如果想当然地定义两个Accessibility Service，
+
+如果想当然地定义两个Accessibility Service，就会在Accessibility设置列表里显示两个对象。
 ![一个应用中如果有多个Accessibility Service时](http://upload-images.jianshu.io/upload_images/4075712-ba20e8275f22acd3.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+
 为了解决这个问题，需要定义一个公共的CommonAccessibility Service继承自Accessibility Service，其他模块向这个公共Service里注册监听器，当公共Service收到onAccessibilityEvent时，通过监听器分发给各个模块。
 
 ## 三、业务过程模型
 
-核心思想：将面向过程的业务转化成面向对象的逻辑
+核心思想：将面向过程的业务转化成面向对象的逻辑<br/>
 每一种业务都可以抽象为以下流程：
-```flow
-st: Start
-judgeRom: Match Rom?
-judgeRule: Math Rule?
-defaultProcess:使用默认的Process
-readProcess:读取Process对应的Intent和ActionList
-executeIntent:执行Intent
-executeActions:执行ActionList
-end: End
+![](/img/in-post/post-android-accessibility/event_flow.png)
 
-st > judgeRom
-judgeRom(y) > judgeRule(y) > readProcess > executeIntent >executeActions> end
-judgeRom(y) > judgeRule(n) > defaultProcess
-judgeRom(n) > defaultProcess > readProcess
-```
-
-#### 3.1 ROM——机型分类
+#### 3.1 Rom——机型分类
 ```java
 class RomItem {
     private int mId;
@@ -214,7 +255,7 @@ public class IntentItem {
       "action":"android.settings.USAGE_ACCESS_SETTINGS"
 }
 ```
-#### 3.5Action——动作
+#### 3.5 Action——动作
 ```java
 public class ActionItem extends BaseNodeInfo {
     public int mId = -1;
@@ -252,6 +293,7 @@ public class ActionItem extends BaseNodeInfo {
 #### 3.6 Json实体转换
 
 ## 四、实际应用
+
 ### 4.1 获取TopActivity
 
 获取TopActivity（当前前台应用）的几种方式
