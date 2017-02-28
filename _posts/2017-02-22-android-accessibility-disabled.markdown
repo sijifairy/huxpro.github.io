@@ -2,12 +2,13 @@
 layout:     post
 title:      "为何Accessibility权限总被无故关闭"
 subtitle:   "Why Accessibility Service Keeps Getting Disabled"
-date:       2017-02-21 12:00:00
+date:       2017-02-22 12:00:00
 author:     "Lizhe"
 header-mask: 0.2
 catalog:    true
 tags:
     - Android
+    - Accessibility
 ---
 
 
@@ -147,3 +148,7 @@ If app is running on an SD card (external storage), that means it's "unavailable
 On some specific device models, even if the Accessibility service is running, it does not necessarily mean our app receives Accessibility events so that our service can work properly. Our development team is looking for possible solutions to address this issue in the future.
 
 If this is occurring for you, we recommend toggling Accessibility Service off and on. Then retry.
+
+---
+
+综上，该问题的症结在于：Android Framework针对被forceStop的应用回收了Accessibility权限，且没有技术解决方案能跳过这个机制。只能对用户进行引导和培养，减小权限被回收的概率。

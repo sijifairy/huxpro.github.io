@@ -37,7 +37,7 @@ Android系统将应用进程分为五级。必要时，按照从低到高顺序�
 
 ## 二、进程回收策略
 Android 中对于内存的回收，主要依靠 Lowmemorykiller 来完成，是一种根据 OOM_ADJ 阈值级别触发相应力度的内存回收的机制。
-![](/img/in-post/post-android-locker-keep-alive/recycle_order.jpg)
+![](../../../../img/in-post/post-android-locker-keep-alive/recycle_order.jpg)
 
 ## 三、免死牌
 
