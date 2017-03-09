@@ -84,7 +84,10 @@ void setServiceInfo (AccessibilityServiceInfo info)
 ### 1.3 使用
 
 #### 1.3.1 事件监听(异步回调)
+
+```java
 void onAccessibilityEvent (AccessibilityEvent event)
+```
 
 - `TYPE_VIEW_CLICKED`  View点击事件
 - `TYPE_VIEW_LONG_CLICKED`  View长按事件
@@ -92,18 +95,29 @@ void onAccessibilityEvent (AccessibilityEvent event)
 - `TYPE_VIEW_SCROLLED` 界面滑动结束
 - `TYPE_WINDOW_STATE_CHANGED` 代表任何界面的跳转，如Activity、Dialog、PopupWindow等
 
+```java
 boolean onKeyEvent (KeyEvent event)
+```
 
+```java
 boolean onGesture (int gestureId)
+```
 
 #### 1.3.2 动作模拟
+```java
+// 全局性动作
 boolean performGlobalAction (int action)
+```
 
 + `GLOBAL_ACTION_BACK` Back键
 + `GLOBAL_ACTION_HOME` Home键
 + `GLOBAL_ACTION_RECENTS` Recent键
 
+```java
+// 对某个View做动作
 AccessibilityNodeInfo: boolean performAction (int action)
+```
+
 + `ACTION_CLICK` 点击动作
 + `ACTION_LONG_CLICK` 长按动作
 + `ACTION_SCROLL_UP` 向上滑动
@@ -111,34 +125,41 @@ AccessibilityNodeInfo: boolean performAction (int action)
 + `ACTION_SET_TEXT` 设置文字内容
 
 #### 1.3.3 AccessibilityNodeInfo
-View和AccessibilityNodeInfo的对应关系。
-
-`AccessibilityNodeInfo AccessibilityService.getRootInActiveWindow ()`
+View Hierarchy和AccessibilityNodeInfo树状结构。
 
 ```java
-public int getChildCount ()
-public AccessibilityNodeInfo getChild (int index)
+AccessibilityNodeInfo AccessibilityService.getRootInActiveWindow()
+```
 
-public List<AccessibilityNodeInfo> findAccessibilityNodeInfosByText (String text)
-public List<AccessibilityNodeInfo> findAccessibilityNodeInfosByViewId (String viewId)     Added in API level 18
-
-public void getBoundsInScreen (Rect outBounds)
-
-public CharSequence getClassName ()
-public CharSequence getPackageName ()
-public CharSequence getText ()
-
-public int getWindowId ()
-
-public boolean isChecked ()
-
-public boolean performAction (int action)
+```java
+public class AccessibilityNodeInfo implements Parcelable {
+    // find children
+    public int getChildCount ()
+    public AccessibilityNodeInfo getChild (int index)
+    
+    // find children by filters
+    public List<AccessibilityNodeInfo> findAccessibilityNodeInfosByText (String text)
+    public List<AccessibilityNodeInfo> findAccessibilityNodeInfosByViewId (String viewId)     
+    
+    // get view display information
+    public int getWindowId ()
+    public void getBoundsInScreen (Rect outBounds)
+    public CharSequence getText ()
+    public boolean isChecked ()
+    
+    // get view class information
+    public CharSequence getClassName ()
+    public CharSequence getPackageName ()
+    
+    // do something
+    public boolean performAction (int action)
+}
 ```
 
 ## 二、单例化
-Accessibility权限的赋予是以Service为单元，而不是以Application为单元。
+> Accessibility权限的赋予是以Service为单元，而不是以Application为单元。
 
-Ex. 一个应用里需要用Accessibility Service做两件事
+**Ex.** 一个应用里需要用Accessibility Service做两件事
 * 清理内存ForceStop
 * 监听系统按键
 
@@ -151,7 +172,8 @@ Ex. 一个应用里需要用Accessibility Service做两件事
 
 核心思想：将面向过程的业务转化成面向对象的逻辑<br/>
 每一种业务都可以抽象为以下流程：
-![](/img/in-post/post-android-accessibility/event_flow.png)
+
+<div style="text-align: center;"><svg height="784.873046875" version="1.1" width="514.166015625" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="overflow: hidden; position: relative; left: -0.5px; top: -0.75px;" viewBox="0 0 514.166015625 784.873046875" preserveAspectRatio="xMidYMid meet"><desc style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Created with Raphaël 2.1.2</desc><defs style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path><marker id="raphael-marker-endblock33-obj16" markerHeight="3" markerWidth="3" orient="auto" refX="1.5" refY="1.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#raphael-marker-block" transform="rotate(180 1.5 1.5) scale(0.6,0.6)" stroke-width="1.6667" fill="#666666" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></use></marker><marker id="raphael-marker-endblock33-obj17" markerHeight="3" markerWidth="3" orient="auto" refX="1.5" refY="1.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#raphael-marker-block" transform="rotate(180 1.5 1.5) scale(0.6,0.6)" stroke-width="1.6667" fill="#666666" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></use></marker><marker id="raphael-marker-endblock33-obj19" markerHeight="3" markerWidth="3" orient="auto" refX="1.5" refY="1.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#raphael-marker-block" transform="rotate(180 1.5 1.5) scale(0.6,0.6)" stroke-width="1.6667" fill="#666666" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></use></marker><marker id="raphael-marker-endblock33-obj21" markerHeight="3" markerWidth="3" orient="auto" refX="1.5" refY="1.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#raphael-marker-block" transform="rotate(180 1.5 1.5) scale(0.6,0.6)" stroke-width="1.6667" fill="#666666" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></use></marker><marker id="raphael-marker-endblock33-obj23" markerHeight="3" markerWidth="3" orient="auto" refX="1.5" refY="1.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#raphael-marker-block" transform="rotate(180 1.5 1.5) scale(0.6,0.6)" stroke-width="1.6667" fill="#666666" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></use></marker><marker id="raphael-marker-endblock33-obj25" markerHeight="3" markerWidth="3" orient="auto" refX="1.5" refY="1.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#raphael-marker-block" transform="rotate(180 1.5 1.5) scale(0.6,0.6)" stroke-width="1.6667" fill="#666666" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></use></marker><marker id="raphael-marker-endblock33-obj26" markerHeight="3" markerWidth="3" orient="auto" refX="1.5" refY="1.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#raphael-marker-block" transform="rotate(180 1.5 1.5) scale(0.6,0.6)" stroke-width="1.6667" fill="#666666" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></use></marker><marker id="raphael-marker-endblock33-obj27" markerHeight="3" markerWidth="3" orient="auto" refX="1.5" refY="1.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#raphael-marker-block" transform="rotate(180 1.5 1.5) scale(0.6,0.6)" stroke-width="1.6667" fill="#666666" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></use></marker><marker id="raphael-marker-endblock33-obj28" markerHeight="3" markerWidth="3" orient="auto" refX="1.5" refY="1.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#raphael-marker-block" transform="rotate(180 1.5 1.5) scale(0.6,0.6)" stroke-width="1.6667" fill="#666666" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></use></marker></defs><rect x="0" y="0" width="49.5625" height="35.5" rx="20" ry="20" fill="#000000" stroke="#666666" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);" fill-opacity="0" stroke-width="2" class="flowchart" id="st" transform="matrix(1,0,0,1,104.375,27.2539)"></rect><text x="10" y="17.75" text-anchor="start" font-family="&quot;Arial&quot;" font-size="14px" stroke="none" fill="#3c3c3c" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: start; font-family: Arial; font-size: 14px;" id="stt" class="flowchartt" transform="matrix(1,0,0,1,104.375,27.2539)" stroke-width="1"><tspan dy="4.75" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"> Start</tspan></text><path fill="#000000" stroke="#666666" d="M41.00390625,20.501953125L0,41.00390625L82.0078125,82.0078125L164.015625,41.00390625L82.0078125,0L0,41.00390625" stroke-width="2" fill-opacity="0" id="judgeRom" class="flowchart" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);" transform="matrix(1,0,0,1,47.1484,116.7539)"></path><text x="46.00390625" y="41.00390625" text-anchor="start" font-family="&quot;Arial&quot;" font-size="14px" stroke="none" fill="#3c3c3c" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: start; font-family: Arial; font-size: 14px;" id="judgeRomt" class="flowchartt" transform="matrix(1,0,0,1,47.1484,116.7539)" stroke-width="1"><tspan dy="4.75390625" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"> Match Rom?</tspan></text><path fill="#000000" stroke="#666666" d="M38.091796875,19.0458984375L0,38.091796875L76.18359375,76.18359375L152.3671875,38.091796875L76.18359375,0L0,38.091796875" stroke-width="2" fill-opacity="0" id="judgeRule" class="flowchart" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);" transform="matrix(1,0,0,1,52.9727,255.6738)"></path><text x="43.091796875" y="38.091796875" text-anchor="start" font-family="&quot;Arial&quot;" font-size="14px" stroke="none" fill="#3c3c3c" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: start; font-family: Arial; font-size: 14px;" id="judgeRulet" class="flowchartt" transform="matrix(1,0,0,1,52.9727,255.6738)" stroke-width="1"><tspan dy="4.763671875" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"> Math Rule?</tspan></text><rect x="0" y="0" width="250.3125" height="35.5" rx="0" ry="0" fill="#000000" stroke="#666666" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);" fill-opacity="0" stroke-width="2" class="flowchart" id="readProcess" transform="matrix(1,0,0,1,4,409.1113)"></rect><text x="10" y="17.75" text-anchor="start" font-family="&quot;Arial&quot;" font-size="14px" stroke="none" fill="#3c3c3c" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: start; font-family: Arial; font-size: 14px;" id="readProcesst" class="flowchartt" transform="matrix(1,0,0,1,4,409.1113)" stroke-width="1"><tspan dy="4.75" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">读取Process对应的Intent和ActionList</tspan></text><rect x="0" y="0" width="83.015625" height="35.5" rx="0" ry="0" fill="#000000" stroke="#666666" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);" fill-opacity="0" stroke-width="2" class="flowchart" id="executeIntent" transform="matrix(1,0,0,1,87.6484,521.8652)"></rect><text x="10" y="17.75" text-anchor="start" font-family="&quot;Arial&quot;" font-size="14px" stroke="none" fill="#3c3c3c" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: start; font-family: Arial; font-size: 14px;" id="executeIntentt" class="flowchartt" transform="matrix(1,0,0,1,87.6484,521.8652)" stroke-width="1"><tspan dy="4.75" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">执行Intent</tspan></text><rect x="0" y="0" width="108.703125" height="35.5" rx="0" ry="0" fill="#000000" stroke="#666666" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);" fill-opacity="0" stroke-width="2" class="flowchart" id="executeActions" transform="matrix(1,0,0,1,74.8047,634.6191)"></rect><text x="10" y="17.75" text-anchor="start" font-family="&quot;Arial&quot;" font-size="14px" stroke="none" fill="#3c3c3c" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: start; font-family: Arial; font-size: 14px;" id="executeActionst" class="flowchartt" transform="matrix(1,0,0,1,74.8047,634.6191)" stroke-width="1"><tspan dy="4.75" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">执行ActionList</tspan></text><rect x="0" y="0" width="44.90625" height="35.5" rx="20" ry="20" fill="#000000" stroke="#666666" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);" fill-opacity="0" stroke-width="2" class="flowchart" id="end" transform="matrix(1,0,0,1,106.7031,747.373)"></rect><text x="10" y="17.75" text-anchor="start" font-family="&quot;Arial&quot;" font-size="14px" stroke="none" fill="#3c3c3c" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: start; font-family: Arial; font-size: 14px;" id="endt" class="flowchartt" transform="matrix(1,0,0,1,106.7031,747.373)" stroke-width="1"><tspan dy="4.75" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"> End</tspan><tspan dy="16.8" x="10" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></tspan></text><rect x="0" y="0" width="140.5625" height="35.5" rx="0" ry="0" fill="#000000" stroke="#666666" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);" fill-opacity="0" stroke-width="2" class="flowchart" id="defaultProcess" transform="matrix(1,0,0,1,314.2148,276.0156)"></rect><text x="10" y="17.75" text-anchor="start" font-family="&quot;Arial&quot;" font-size="14px" stroke="none" fill="#3c3c3c" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: start; font-family: Arial; font-size: 14px;" id="defaultProcesst" class="flowchartt" transform="matrix(1,0,0,1,314.2148,276.0156)" stroke-width="1"><tspan dy="4.75" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">使用默认的Process</tspan></text><path fill="none" stroke="#666666" d="M129.15625,62.75390625C129.15625,62.75390625,129.15625,102.40800619125366,129.15625,113.75434533460066" stroke-width="2" marker-end="url(#raphael-marker-endblock33-obj16)" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path><path fill="none" stroke="#666666" d="M129.15625,198.76171875C129.15625,198.76171875,129.15625,240.93616630649194,129.15625,252.67417172992964" stroke-width="2" marker-end="url(#raphael-marker-endblock33-obj17)" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path><text x="134.15625" y="208.76171875" text-anchor="start" font-family="&quot;Arial&quot;" font-size="14px" stroke="none" fill="#3c3c3c" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: start; font-family: Arial; font-size: 14px;" stroke-width="1"><tspan dy="4.76171875" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">yes</tspan></text><path fill="none" stroke="#666666" d="M211.1640625,157.7578125C211.1640625,157.7578125,384.49609375,157.7578125,384.49609375,157.7578125C384.49609375,157.7578125,384.49609375,254.62018838198856,384.49609375,273.01836426972955" stroke-width="2" marker-end="url(#raphael-marker-endblock33-obj19)" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path><text x="216.1640625" y="147.7578125" text-anchor="start" font-family="&quot;Arial&quot;" font-size="14px" stroke="none" fill="#3c3c3c" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: start; font-family: Arial; font-size: 14px;" stroke-width="1"><tspan dy="4.7578125" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">no</tspan></text><path fill="none" stroke="#666666" d="M129.15625,331.857421875C129.15625,331.857421875,129.15625,391.86622379068285,129.15625,406.1065937765334" stroke-width="2" marker-end="url(#raphael-marker-endblock33-obj21)" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path><text x="134.15625" y="341.857421875" text-anchor="start" font-family="&quot;Arial&quot;" font-size="14px" stroke="none" fill="#3c3c3c" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: start; font-family: Arial; font-size: 14px;" stroke-width="1"><tspan dy="4.763671875" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">yes</tspan></text><path fill="none" stroke="#666666" d="M205.33984375,293.765625C205.33984375,293.765625,293.7009215056896,293.765625,311.2178148498351,293.765625" stroke-width="2" marker-end="url(#raphael-marker-endblock33-obj23)" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path><text x="210.33984375" y="283.765625" text-anchor="start" font-family="&quot;Arial&quot;" font-size="14px" stroke="none" fill="#3c3c3c" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: start; font-family: Arial; font-size: 14px;" stroke-width="1"><tspan dy="4.75" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">no</tspan></text><path fill="none" stroke="#666666" d="M129.15625,444.611328125C129.15625,444.611328125,129.15625,504.62013004068285,129.15625,518.8605000265334" stroke-width="2" marker-end="url(#raphael-marker-endblock33-obj25)" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path><path fill="none" stroke="#666666" d="M129.15625,557.365234375C129.15625,557.365234375,129.15625,617.3740362906829,129.15625,631.6144062765334" stroke-width="2" marker-end="url(#raphael-marker-endblock33-obj26)" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path><path fill="none" stroke="#666666" d="M129.15625,670.119140625C129.15625,670.119140625,129.15625,730.1279425406829,129.15625,744.3683125265334" stroke-width="2" marker-end="url(#raphael-marker-endblock33-obj27)" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path><path fill="none" stroke="#666666" d="M384.49609375,311.515625C384.49609375,311.515625,384.49609375,384.111328125,384.49609375,384.111328125C384.49609375,384.111328125,129.15625,384.111328125,129.15625,384.111328125C129.15625,384.111328125,129.15625,399.48477268218994,129.15625,406.12057589925826" stroke-width="2" marker-end="url(#raphael-marker-endblock33-obj28)" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path></svg> </div>
 
 #### 3.1 Rom——机型分类
 ```java
@@ -727,7 +749,8 @@ B. the LinearLayout and the Button
 Screen Reader的发声顺序为Heading One，Heading Two，Action。
 
 #### 5.3 如何判断一个View是否是Focusable的
-![流程图](https://fb-s-a-a.akamaihd.net/h-ak-xfp1/v/t39.2365-6/14617138_1814731138763244_8751358451034095616_n.png?oh=ee5ad48e4ca8fd4acea3423c9e9c1bbe&oe=589C847E&__gda__=1486663153_4b754682c364ff1c8b36b1b6ebecc889)
+
+![流程图](/img/in-post/post-android-accessibility/accessibility_focus.png)
 
 #### 5.4 Stetho
 [通过Stetho调试应用的Accessibility性能](https://code.facebook.com/posts/391276077927020/android-accessibility-debugging-with-stetho/)

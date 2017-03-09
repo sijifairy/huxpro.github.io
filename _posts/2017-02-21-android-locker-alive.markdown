@@ -8,6 +8,8 @@ header-mask: 0.2
 catalog:    true
 tags:
     - Android
+    - 锁屏
+    - 保活
 ---
 
 

@@ -21,7 +21,7 @@ tags:
 ## 一、原理
 
 #### 1.1 ActivityManagerService
-在上一篇[Magic Locker进程保活总结]()中，我们知道forceStop之后会调用ActivityManagerService的forceStopPackageLocked方法，方法里发出了Intent.ACTION_PACKAGE_RESTARTED广播。具体源码见上一篇文章。
+在上一篇[Magic Locker进程保活总结](../../../../2017/02/21/android-locker-alive/index.html)中，我们知道forceStop之后会调用ActivityManagerService的forceStopPackageLocked方法，方法里发出了Intent.ACTION_PACKAGE_RESTARTED广播。具体源码见上一篇文章。
 
 #### 1.2 PackageMonitor
 PackageMonitor是一个辅助类，用来监听应用的安装、卸载、更新等。其中就监听了Intent.ACTION_PACKAGE_RESTARTED。

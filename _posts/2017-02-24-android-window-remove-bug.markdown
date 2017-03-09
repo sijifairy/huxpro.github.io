@@ -14,9 +14,22 @@ tags:
 
 <img src="/img/in-post/post-android-window-remove-bug/window-removeview-bug.gif" />
 
-我的做法是：把蓝色的View动画到透明度为0，动画的onAnimationEnd里把蓝色的View从window上remove掉，但是发现会闪一下。
+我的做法是：把LockWindow动画到透明度为0，并在动画的onAnimationEnd里把LockWindow移除掉。
 
-Fuck！！！这也能有bug，只能好去读源码。
+```java
+public void removeLockWindow() {
+    ObjectAnimator fadeOut = ObjectAnimator.ofFloat(LockWindow.this, View.ALPHA, 0);
+    fadeOut.setDuration(DURATION_HIDE_WINDOW);
+    fadeOut.addListener(new AnimatorListenerAdapter() {
+        @Override public void onAnimationEnd(Animator animation) {
+            mWindowManager.removeView(LockWindow.this);
+        }
+    });
+    fadeOut.start();
+}
+```
+
+但是发现会闪一下，Fuck！！！这也能有bug，只能好去读源码。
 
 ### 1. WindowManager和ViewManager
 
@@ -34,15 +47,16 @@ public interface ViewManager
 }
 
 public interface WindowManager extends ViewManager {
-	***
+	// 省略，声明了一些window的type，以及LayoutParams等
 }
 ```
 
 ### 2. WindowManagerImpl
 
-接着，需要找到WindowManager的实现类——WindowManagerImpl。看它的removeView具体实现,发现具体实现在WindowManagerGlobal的removeView中。
+接着，需要找到WindowManager的实现类——WindowManagerImpl。看它removeView方法的具体实现,发现具体实现在WindowManagerGlobal的removeView中。
 ```java
 public final class WindowManagerImpl implements WindowManager {
+    // 定义mGlobal为WindowManagerGlobal的单例对象
     private final WindowManagerGlobal mGlobal = WindowManagerGlobal.getInstance();
 
     @Override
@@ -93,7 +107,7 @@ private void removeViewLocked(int index, boolean immediate) {
 }
 ```
 
-发现removeView里面没啥有用的，主要调用了removeViewLocked。removeViewLocked里找到了要remove掉的这个View的ViewRootImpl对象，然后调用了ViewRootImpl的die()方法。
+WindowManagerGlobal里的removeView方法主要调用了removeViewLocked。removeViewLocked里找到了要remove掉的这个View的ViewRootImpl对象，然后调用了ViewRootImpl的die()方法。
 
 ### 4. ViewRootImpl
 ```java
@@ -130,11 +144,13 @@ private void destroyHardwareRenderer() {
     }
 }
 ```
-die()方法主要调用了destroyHardwareRenderer，destroyHardwareRenderer里面会通过HardwareRenderer递归删除掉所有View的HardwareLayer缓存，应该是用来释放GPU缓存，避免泄漏。<br>
-好吧，线索到这看起来断掉了，这些东西和闪一下有毛关系呢？这时候我想到了android的绘制机制，蓝色的鬼东西肯定是画出来的。
+die()方法主要调用了destroyHardwareRenderer，destroyHardwareRenderer里面会通过HardwareRenderer递归删除掉所有View的HardwareLayer缓存，用来释放GPU显存，避免泄漏和因GPU显存不足报错。
+
+好吧，线索到这看起来断掉了，这些东西和闪一下有什么关系呢？我们得到的信息有：WindowManager.removeView会同步地将HardwareLayer缓存清理掉，而这关系到View的绘制，所以应该从绘制流程上找原因。
 
 ### 5. Choreographer
-Choreographer是Android4.1以后用来统一调度界面绘制的关键类。
+Choreographer是Android4.1以后用来统一调度界面绘制的关键类。每一次界面的重绘都要调用Choreographer.doFrame()方法。
+
 ```java
 /**
  * Callback type: Animation callback.  Runs before traversals.
@@ -175,28 +191,33 @@ void doFrame(long frameTimeNanos, int frame) {
 	***
 }
 ```
-通过读代码发现，在一个消息周期内，动画回调CALLBACK_ANIMATION发生在绘制回调CALLBACK_TRAVERSAL之前。也就是说，动画回调里面调用了WindowManager.removeView方法，同步地摧毁了view的GPU缓存，然后马上运行到drawSoftware()
-，又做了一遍绘制！而View真正从界面上消失是在下一个消息周期，这之间的时间差值就是闪这一下的原因。
+通过读代码发现，在一个消息周期内，动画回调CALLBACK_ANIMATION发生在绘制回调CALLBACK_TRAVERSAL之前。结合篇首贴出的代码，在一个绘制周期内，动画回调里调用了WindowManager.removeView()方法，然后马上运行到doCallbacks(Choreographer.CALLBACK_TRAVERSAL, frameTimeNanos)，又做了一遍绘制！而View真正从界面上消失是在下一个消息周期，这之间的时间差值就是闪这一下的原因。
 
-这问题有点深度啊，写代码的时候绝对想不到！至于为何drawSoftware()里无视了最外层View的alpha属性，并没有进一步探讨。
+至于为何removeView之后的这次绘制无视了最外层View的alpha属性，并没有进一步探讨。
 
 ### 6. 解决
 
-通过上一节的分析，只要让摧毁view缓存的动画之后不重绘界面就行了。即只需要把removeView的操作移到下一个消息周期，post一下就好了。
+通过上一节的分析，只要在removeView之后不重绘界面就行了。即只需要把removeView的操作移到下一个消息周期。
+
 ```java
-fadeOut.addListener(new AnimatorListenerAdapter() {
-    @Override public void onAnimationEnd(Animator animation) {
-        post(new Runnable() {
-            @Override public void run() {
-                mWindowManager.removeView(LockWindow.this);
-            }
-        });
-    }
-});
-fadeOut.start();
+public void removeLockWindow() {
+    ObjectAnimator fadeOut = ObjectAnimator.ofFloat(LockWindow.this, View.ALPHA, 0);
+    fadeOut.setDuration(DURATION_HIDE_WINDOW);
+    fadeOut.addListener(new AnimatorListenerAdapter() {
+        @Override public void onAnimationEnd(Animator animation) {
+            // 将removeView方法post到下一个消息周期
+            post(new Runnable() {
+                @Override public void run() {
+                    mWindowManager.removeView(LockWindow.this);
+                }
+            });
+        }
+    });
+    fadeOut.start();
+}
 ```
 
-其实这个问题也不算是removeView的bug，只是mWindowManager.removeView不太适合在onAnimationEnd里面使用。以后有这需求的小伙伴可以借鉴一下。
+其实这个问题也不算是removeView的bug，只是mWindowManager.removeView的异步特性导致的。以后碰到这个坑的小伙伴可以借鉴一下。
 
 最后上个解决后的图，很柔和嗯
 
