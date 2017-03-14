@@ -1,7 +1,7 @@
 ---
 layout:     post
 title:      "Android流畅度优化之动画设计原则"
-subtitle:   "Android Performance Optimization —— Animator Principle"
+subtitle:   "Android Performance Optimization —— Animation Design Principles"
 date:       2017-02-19 12:00:00
 author:     "Lizhe"
 header-mask: 0.2

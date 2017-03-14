@@ -36,8 +36,8 @@ tags:
 
 1. GPU Overdraw
 
-    <img src="6.png" style="width:40%" />
-    <img src="2.png" style="width:40%" />
+    <img src="../../../../img/in-post/post-android-performance/6.png" style="width:40%;display:inline" />
+    <img src="../../../../img/in-post/post-android-performance/2.png" style="width:40%;display:inline" />
     <br/>
 
    overdraw颜色和绘制次数的关系。
@@ -46,12 +46,12 @@ tags:
 
 3. Show GPU profile as Bar，直观显示卡顿与否。
 
-    <img src="11.png" style="width:40%" />
-    <img src="14.png" style="width:40%" />
+    <img src="../../../../img/in-post/post-android-performance/11.png" style="width:40%;display:inline" />
+    <img src="../../../../img/in-post/post-android-performance/14.png" style="width:40%;display:inline" />
     <br/>
 
-    <img src="12.png" style="width:40%" />
-    <img src="13.png" style="width:40%" />
+    <img src="../../../../img/in-post/post-android-performance/12.png" style="width:40%;display:inline" />
+    <img src="../../../../img/in-post/post-android-performance/13.png" style="width:40%;display:inline" />
     <br/>
 4. BlockCanary
 
@@ -72,7 +72,7 @@ tags:
 
    * 分段背景绘制, 新闻页
 
-     <img src="4.png" style="width:40%"></img>
+     <img src="../../../../img/in-post/post-android-performance/4.png" style="width:40%"></img>
 
    * onDraw中使用clipRect
 2. 写完功能多想想，显示B之后要隐藏A。
@@ -89,7 +89,7 @@ tags:
 13. 使用TextView的CompoundDrawable代替TextView+ImageView。
 14. 尽量不要在Launcher上堆砌过多的View，改用Activity来实现。
 	
-	<img src="15.png" style="width:40%"></img>
+	<img src="../../../../img/in-post/post-android-performance/15.png" style="width:40%"></img>
 15. 慎用Alpha
 16. 用TextView/EditText的时候，如果这个TextView会运行时setText或setHint，那么它的layout\_width最好是match\_parent或固定宽度。防止requestLayout
 17. LinearLayout里面有多个TextView时，注意设置baselineAligned属性为false。防止requestLayout
