@@ -132,7 +132,7 @@ invoke-virtual {v0, v1}, Landroid/content/Intent;->addFlags(I)Landroid/content/I
 .line 108
 invoke-virtual {p0, v0}, Landroid/content/Context;->startActivity(Landroid/content/Intent;)V
 ```
-上面的smali是启动Activity的过程，只需要把最后一行删除，使用apk-tool重新打包签名。跑起来以后，发现调起解锁页的功能消失了，那么久肯定是JustGo这个Activity起的作用。
+上面的smali是启动Activity的过程，只需要把最后一行删除，使用apk-tool重新打包签名。跑起来以后，发现调起解锁页的功能消失了，那么就肯定是JustGo这个Activity起的作用。
 
 <video width="40%" style="margin:0 auto;display: block;" src="../../../../img/in-post/post-android-system-unlock-programmatically/360security-r-s.mp4"  controls="controls" autoplay="autoplay"></video>
 

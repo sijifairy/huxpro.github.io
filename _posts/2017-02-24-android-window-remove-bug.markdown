@@ -1,6 +1,6 @@
 ---
 layout:     post
-title:      "记Android WindowManager.removeView的一个Bug"
+title:      "记Android WindowManager使用的一个坑"
 subtitle:   "Encountered a bug in WindowManager.removeView"
 date:       2017-02-24 00:00:00
 author:     "Lizhe"
@@ -191,13 +191,13 @@ void doFrame(long frameTimeNanos, int frame) {
 	***
 }
 ```
-通过读代码发现，在一个消息周期内，动画回调CALLBACK_ANIMATION发生在绘制回调CALLBACK_TRAVERSAL之前。结合篇首贴出的代码，在一个绘制周期内，动画回调里调用了WindowManager.removeView()方法，然后马上运行到doCallbacks(Choreographer.CALLBACK_TRAVERSAL, frameTimeNanos)，又做了一遍绘制！而View真正从界面上消失是在下一个消息周期，这之间的时间差值就是闪这一下的原因。
+通过读代码发现，在一个消息周期内，动画回调CALLBACK_ANIMATION发生在绘制回调CALLBACK_TRAVERSAL之前。结合篇首贴出的代码，在一个绘制周期内，动画回调里调用了WindowManager.removeView()方法，然后马上运行到doCallbacks(Choreographer.CALLBACK_TRAVERSAL, frameTimeNanos)，又做了一遍绘制！而这次的绘制却没有考虑到View的Alpha值为0，直接把蓝色的背景绘制了出来，就表现成了蓝色的闪烁。锁屏界面真正从屏幕上消失发生在下一个消息周期，这之间的时间差值就是闪这一下的原因。
 
-至于为何removeView之后的这次绘制无视了最外层View的alpha属性，并没有进一步探讨。
+至于为何removeView之后的这次绘制无视了最外层View的alpha属性，我并没有进一步探讨。
 
 ### 6. 解决
 
-通过上一节的分析，只要在removeView之后不重绘界面就行了。即只需要把removeView的操作移到下一个消息周期。
+通过上一节的分析，只需要把removeView的操作移到下一个消息周期，即把动画回调中同步调用的removeView改成异步调用。
 
 ```java
 public void removeLockWindow() {
@@ -217,7 +217,7 @@ public void removeLockWindow() {
 }
 ```
 
-其实这个问题也不算是removeView的bug，只是mWindowManager.removeView的异步特性导致的。以后碰到这个坑的小伙伴可以借鉴一下。
+其实这个问题也不算是removeView的bug，只是mWindowManager.removeView会同步摧毁GPU缓存的特性导致的。以后碰到这个坑的小伙伴可以借鉴一下。
 
 最后上个解决后的图，很柔和嗯
 

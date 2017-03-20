@@ -1,0 +1,81 @@
+---
+layout:     post
+title:      "减小包体积之字体提取"
+subtitle:   "Font Clipping to Reduce Package Size"
+date:       2017-03-15 00:00:00
+author:     "Lizhe"
+header-mask: 0.2
+catalog:    true
+tags:
+    - 字体
+---
+
+
+时间Widget个性化只需要一个字体文件的'0~9'和':'。本着精益求精的精神，最大化降低不必要的包体积增长，需要将字体文件中的有用字符提取出来。
+
+不幸的是组里没人拥有这个技能，索性把这个活揽过来了。
+
+## 1. 拥有字体
+
+昨天晚上从设计那里求来了目标字体：Akrobat-Light.otf (57KB, OpenType font)。
+
+## 2. 提取字体——sfnttool
+
+sfnttool 是谷歌开源项目 sfntly 内置的工具，他的作用是从一个字体文件中提取指定的文字，导出的字体中将只包含你需要的文字。
+
+下载地址：[http://download.csdn.net/detail/ldpjay/8822587](http://download.csdn.net/detail/ldpjay/8822587)
+
+```shell
+java -jar sfnttool.jar -h  
+subset [-?|-h|-help] [-b] [-s string] fontfile outfile  
+prototype font subsetter  
+        -?,-help        print this help information  
+        -s,-string       string to subset  
+        -b,-bench        benchmark (run 10000 iterations)  
+        -h,-hints        strip hints  
+        -w,-woff         output woff format  
+        -e,-eot  output eot format  
+        -x,-mtx  enable microtype express compression for eot format
+```
+
+[使用示例]
+```shell
+java -jar sfnttool.jar -s "0123456789:" Akrobat-Light.otf Akrobat-Light-simplified.otf
+```
+
+发现会报错:
+```java
+Exception in thread "main" java.lang.NullPointerException
+	at com.google.typography.font.tools.sfnttool.GlyphCoverage.getGlyph(Unknown Source)
+	at com.google.typography.font.tools.sfnttool.GlyphCoverage.touchGlyph(Unknown Source)
+	at com.google.typography.font.tools.sfnttool.GlyphCoverage.getGlyphCoverage(Unknown Source)
+	at com.google.typography.font.tools.sfnttool.SfntTool.subsetFontFile(Unknown Source)
+	at com.google.typography.font.tools.sfnttool.SfntTool.main(Unknown Source)
+```
+
+怀疑是otf字体的问题，用了另外一个ttf的字体发现能成功提取。
+
+## 3. otf转ttf
+
+使用FontCreator打开otf文件，另存为ttf文件，得到 Akrobat-Light.ttf (66KB, TrueType font)。
+
+FontCreator是一个比较出名的字体编辑软件，目前只看到有Windows版。破解版下载地址：[http://www.cr173.com/soft/6168.html](http://www.cr173.com/soft/6168.html)，我使用Windows7虚拟机成功运行并转换。
+
+## 4. 提取
+
+[只包含数字，结果文件3KB]
+```shell
+java -jar sfnttool.jar -s "0123456789:" Akrobat-Light.ttf Akrobat-Light-simplified.ttf
+```
+
+[只包含数字、英文字母、几个标点(剔除拉丁、希腊字母和各种符号等)，结果文件7KB]
+```shell
+java -jar sfnttool.jar -s 
+"0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ./:" 
+Akrobat-Light.ttf Akrobat-Light-simple.ttf
+```
+
+## 5. 结论
+* sfnttool很好用、方便，但不支持otf格式，支持ttf格式。
+* 提取后的字体文件大小7KB，小于包里很多图片文件，即字体个性化的包体积成本很低。
+* 提取后的字体只适配英文字母，丢弃了很多其他语言字母，想要完美个性化多语言慎用。
