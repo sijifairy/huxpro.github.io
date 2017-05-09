@@ -11,7 +11,7 @@ tags:
 ---
 
 
-最近看android源码的时候遇到了一些很好玩的代码，总结出来搞个乐子。
+最近看android源码和论坛的时候遇到了一些很好玩的代码，总结出来搞个乐子。
 
 ## 1. Let's party like it's 1995!
 
@@ -40,4 +40,4 @@ LayoutInflater的createViewFromTag方法是用来解析单个xml节点的，但�
 
 并不能理解这个comment的意思，提升了LayoutInflater的柔顺度？在LayoutInlater定义了一个BlinkLayout能提升柔顺度？如果一定要搞清楚它的含义，大概只能去问Romain Guy <romainguy@google.com> 这位author了。
 
-## 
+##

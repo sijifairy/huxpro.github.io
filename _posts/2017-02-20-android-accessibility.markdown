@@ -14,11 +14,9 @@ tags:
 
 > Android is for Everyone,  and Everyone has the access to Everything.
 
-提到无障碍设计（Accessibility），人们第一时间想到的是为残障人士或者特殊人群做的优化——更大的字号，栏杆和拐杖，助听器。
+Google在API 4加入无障碍设计（Accessibility）的初衷是为了服务残疾人，或者无法正常和设备交互的人，比如正在开车的司机、带小孩的母亲、视力弱化的老人等。
 
-没错，Google在API 4加入Accessibility Service的初衷就是为了服务残疾人，或者无法正常和设备交互的人，比如正在开车的司机、带小孩的母亲、视力弱化的老人等。
-
-Google API对Accessibility Service的描述为：
+Google API对Accessibility服务的描述为：
 * Accessibility Service应该**只被**用来辅助残障用户使用Android设备和应用。
 * 它运行在后台，能够在AccessibilityEvent发生时接到系统的异步回调。
 * 这些事件代表着用户界面的状态变化，例如，焦点变更、按钮点击等。
@@ -65,7 +63,7 @@ xml/accessibilityservice.xml
      android:canRetrieveWindowContent="true"
      android:description="@string/boost_plus_accessibility_service_description"
      . . .
- /> 
+ />
 ```
 
 B、在代码里配置
@@ -136,21 +134,21 @@ public class AccessibilityNodeInfo implements Parcelable {
     // find children
     public int getChildCount ()
     public AccessibilityNodeInfo getChild (int index)
-    
+
     // find children by filters
     public List<AccessibilityNodeInfo> findAccessibilityNodeInfosByText (String text)
     public List<AccessibilityNodeInfo> findAccessibilityNodeInfosByViewId (String viewId)     
-    
+
     // get view display information
     public int getWindowId ()
     public void getBoundsInScreen (Rect outBounds)
     public CharSequence getText ()
     public boolean isChecked ()
-    
+
     // get view class information
     public CharSequence getClassName ()
     public CharSequence getPackageName ()
-    
+
     // do something
     public boolean performAction (int action)
 }
@@ -650,7 +648,7 @@ private int getClickType(AccessibilityEvent event){
 ### 4.5 清理内存（ForceStop)
 安全清理类应用清理内存的机制可能大多数Android开发者并不清楚，但是即便是普通用户也知道一个app可以在设置->应用管理里面强制停止（ForceStop）。没错，安全类应用的深度清理就是把Accessibility Service给予的模拟点击功能和FoceStop结合了起来。
 
-![深度内存清理](http://upload-images.jianshu.io/upload_images/4075712-0ec630504378ec77.gif?imageMogr2/auto-orient/strip) 
+![深度内存清理](http://upload-images.jianshu.io/upload_images/4075712-0ec630504378ec77.gif?imageMogr2/auto-orient/strip)
 
 上面动画清晰的显示了内存清理的工作机制：
 
