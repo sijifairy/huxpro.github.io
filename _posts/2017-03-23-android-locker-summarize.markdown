@@ -45,4 +45,4 @@ Window方式的优缺点：
 * 推荐使用Window方式，能做到极致的用户体验。
 * Window方式学习成本较高，维护成本较低；Activity方式反之。
 
-关于使用两种方式实现简单的锁屏应用，参见我的github:
+关于使用两种方式实现简单的锁屏应用，参见我的github:[https://github.com/lizhe-tech/LockScreen](https://github.com/lizhe-tech/LockScreen)

@@ -200,3 +200,14 @@ public class DismissKeyguradActivity extends Activity {
 我们知道，FLAG_DISMISS_KEYGUARD会使普通系统锁屏消失，这一点从JavaDoc注释里可以了解到。但是360Security利用了它更不为人知的一面：当系统为安全锁屏（存在密码）时，带有FLAG_DISMISS_KEYGUARD标记的Activity启动会触发解锁页的调起。
 
 至于FLAG_DISMISS_KEYGUARD触发解锁页调起的流程，将单独开一篇文章，从源码层面分析。
+
+## 8. 相关的taskAffinity知识点
+
+taskAffinity可以指定一个栈名，配合`Intent.FLAG_ACTIVITY_NEW_TASK`可以把Activity启动到对应的栈里。
+
+那么锁屏Activity启动DismissKeyguardActivity的时候：
+* 可以不加`Intent.FLAG_ACTIVITY_NEW_TASK`，同时不指定taskAffinity，那么默认启动到锁屏栈里
+* 可以加`Intent.FLAG_ACTIVITY_NEW_TASK`，通知指定和锁屏Activity相同栈名的taskAffinity
+* 不加`Intent.FLAG_ACTIVITY_NEW_TASK`，指定taskAffinity并没有用
+
+注意了，千万不要加了`Intent.FLAG_ACTIVITY_NEW_TASK`，而不指定taskAffinity。这种情况下，按照activity栈的复用原则，DismissKeyguardActivity会启动到主栈里，并把程序的主栈拉入前台，造成碧油鸡。
